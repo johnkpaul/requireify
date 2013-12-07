@@ -6,8 +6,8 @@ var detective = require('detective');
 var generator = require('inline-source-map');
 var combine = require('combine-source-map');
 
-var prepend = innersource(addRequire).replace(/\n/g, '');
-var postpend = innersource(addModule).replace(/\n/g, '');
+var prepend = innersource(addRequire).replace(/[\n\r]/g, '');
+var postpend = innersource(addModule).replace(/[\n\r]/g, '');
 
 module.exports = function(filename) {
   var buffer = '';
@@ -20,11 +20,15 @@ module.exports = function(filename) {
     var totalPrelude = prepend + nodeModuleRequires;
     var offset = totalPrelude.split('\n').length - 1;
     
-    var complete = totalPrelude + combine.removeComments(buffer) + postpend;
+    var partial = totalPrelude + combine.removeComments(buffer);
+    if (partial.charAt(partial.length - 1) !== ';') {
+        partial += ';';
+    }
+    var complete = partial + postpend;
     
     var map = combine.create().addFile({ sourceFile: filename, source: buffer}, {line: offset});
 
-    this.queue( complete + '\n'+map.comment());
+    this.queue( complete + '\n' + map.comment());
 
     this.queue(null);
   });
