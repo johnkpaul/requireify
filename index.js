@@ -40,7 +40,8 @@ function addModule(){
   if(typeof __filename !== 'undefined'){
     var moduleName = __filename.slice(0, __filename.lastIndexOf('.'));
     if (moduleName.match(/\/index$/)) {
-      moduleName = moduleName.slice(0, -6);
+      moduleName = (moduleName.length === 6)
+        ? '/' : moduleName.slice(0, -6);
     }
     global.require[moduleName] = module.exports;
   }
