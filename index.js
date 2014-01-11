@@ -38,7 +38,7 @@ module.exports = function(filename) {
 function addModule(){
   var global = (function(){ return this; }).call(null);
   if(typeof __filename !== 'undefined'){
-    var moduleName = __filename.slice(0, __filename.lastIndexOf('.'));
+    var moduleName = __filename.slice(0, __filename.lastIndexOf('.')).replace(/\\/g, '/');
     global.require[moduleName] = module.exports;
   }
 }
@@ -46,7 +46,9 @@ function addModule(){
 function addRequire(){
   var global = (function(){ return this; }).call(null);
   if(!global.require){
-    global.require = global.require || function require(key){return global.require[key];};
+    global.require = function require(key){
+        return global.require[key.replace(/\\/g, '/')];
+    };
 
     (function(){
     var require = global.require;
@@ -58,6 +60,8 @@ function addRequire(){
         },
         set: function(newRequire){
             ret = function(key){
+                key = key.replace(/\\/g, '/');
+
                 if(require[key]){
                   return require[key];
                 }else if(require[key + '/index']){
@@ -94,6 +98,7 @@ function getNodeModuleRequires(source){
     return require[0] !== '.';
   });
   return requires.map(function(require){
+	require = require.replace(/\\/g, '/');
     return ";var global = (function(){ return this; }).call(null);global.require['"+require+"'] = require('"+require+"');";
   }).join('');
 }
