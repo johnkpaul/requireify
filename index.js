@@ -20,7 +20,7 @@ module.exports = function(filename) {
   function() {
     var nodeModuleRequires = getNodeModuleRequires(buffer);
     var totalPrelude = prepend + nodeModuleRequires;
-    var offset = totalPrelude.split('\n').length - 1;
+    var offset = totalPrelude.split('\n').length - 0;
 
     var partial = totalPrelude + combine.removeComments(buffer) + ';';
 

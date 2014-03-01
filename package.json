@@ -26,15 +26,15 @@
     "innersource": "0.0.2",
     "detective": "~2.2.0",
     "inline-source-map": "~0.2.5",
-    "combine-source-map": "~0.2.0"
+    "combine-source-map": "~0.2.0",
+    "browserify": "~3.31.2"
   },
   "devDependencies": {
-    "browserify": "~2.29.1",
     "jshint": "~2.1.11",
     "convert-source-map": "~0.2.6",
     "coffeeify": "~0.5.2"
   },
   "peerDependencies": {
-    "browserify": ">=2.0.0"
+    "browserify": ">=3.0.0"
   }
 }
