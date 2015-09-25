@@ -22,11 +22,11 @@
   "author": "John K. Paul",
   "license": "MIT",
   "dependencies": {
-    "through": "~2.2.7",
-    "innersource": "0.0.2",
-    "detective": "~2.2.0",
+    "combine-source-map": "~0.2.0",
+    "detective": "~4.2.0",
     "inline-source-map": "~0.2.5",
-    "combine-source-map": "~0.2.0"
+    "innersource": "0.0.2",
+    "through": "~2.2.7"
   },
   "devDependencies": {
     "jshint": "~2.1.11",
