@@ -7,6 +7,7 @@ var generator = require('inline-source-map');
 var combine = require('combine-source-map');
 var EOL = require('os').EOL;
 var newlineRegex = new RegExp(EOL, 'g');
+var JSON_EXT = '.json';
 
 var prepend = innersource(addRequire).replace(newlineRegex, '');
 var postpend = innersource(addModule).replace(newlineRegex, '');
@@ -18,6 +19,9 @@ module.exports = function(filename) {
     buffer += chunk.toString();
   },
   function() {
+    if (JSON_EXT === filename.substr(-5)) {
+        buffer = 'module.exports =' + buffer.replace(/\n/g, '');
+    }
     var nodeModuleRequires = getNodeModuleRequires(buffer);
     var totalPrelude = prepend + nodeModuleRequires;
     var offset = totalPrelude.split('\n').length - 0;
@@ -36,60 +40,64 @@ module.exports = function(filename) {
 };
 
 function addModule(){
-  var global = (function(){ return this; }).call(null);
-  if(typeof __filename !== 'undefined'){
-    var moduleName = __filename.slice(0, __filename.lastIndexOf('.')).replace(/\\/g, '/');
-    global.require[moduleName] = module.exports;
-  }
+  (function () {
+      var global = this;
+      if(typeof __filename !== 'undefined'){
+        var moduleName = __filename.slice(0, __filename.lastIndexOf('.')).replace(/\\/g, '/');
+        global.require[moduleName] = module.exports;
+      }
+  }).call(null);
 }
 
 function addRequire(){
-  var global = (function(){ return this; }).call(null);
-  if(!global.require){
-    global.require = function require(key){
-        return global.require[key.replace(/\\/g, '/')];
-    };
+  (function () {
+    var global = this;
+    if(!global.require){
+      global.require = function require(key){
+          return global.require[key.replace(/\\/g, '/')];
+      };
 
-    (function(){
-    var require = global.require;
-    var ret = global.require;
+      (function(){
+      var require = global.require;
+      var ret = global.require;
 
-    Object.defineProperty(global, 'require', {
-        get: function(){
-          return ret;
-        },
-        set: function(newRequire){
-            ret = function(key){
-                key = key.replace(/\\/g, '/');
+      Object.defineProperty(global, 'require', {
+          get: function(){
+            return ret;
+          },
+          set: function(newRequire){
+              ret = function(key){
+                  key = key.replace(/\\/g, '/');
 
-                if(require[key]){
-                  return require[key];
-                }else if(require[key + '/index']){
-                  return require[key + '/index'];
-                }else{
-                  var temp = ret;
-                  var module;
-                  ret = newRequire;
-                  try {
-                    module = newRequire(key);
-                  }
-                  catch(e){
+                  if(require[key]){
+                    return require[key];
+                  }else if(require[key + '/index']){
+                    return require[key + '/index'];
+                  }else{
+                    var temp = ret;
+                    var module;
+                    ret = newRequire;
+                    try {
+                      module = newRequire(key);
+                    }
+                    catch(e){
+                      ret = temp;
+                      throw e;
+                    }
                     ret = temp;
-                    throw e;
+                    return module;
                   }
-                  ret = temp;
-                  return module;
-                }
-            };
-            for(var key in require){
-              ret[key] = require[key];
-            }
-        }
-    });
+              };
+              for(var key in require){
+                ret[key] = require[key];
+              }
+          }
+      });
 
-    })();
-  }
+      })();
+    }
 
+  }).call(null);
 }
 
 function getNodeModuleRequires(source){
